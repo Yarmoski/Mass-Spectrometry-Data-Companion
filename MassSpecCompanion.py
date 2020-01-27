@@ -4,11 +4,15 @@ from numbers import Number
 import math
 import pprint
 import openpyxl
+import xlsxwriter
 
+ignore_first_labeling = True
 
-index_column = 0 #columns are zero indexed
-num_trials=int(input("Please enter the number of trials.")) #3
-num_rows = int(input("Please enter the total number of rows.")) #36
+treatment_column = 0 #columns are zero indexed
+# num_trials=int(input("Please enter the number of trials.")) #3
+# num_rows = int(input("Please enter the total number of rows.")) #36
+num_trials = 3
+num_rows = 36
 
 num_columns = 100 #can be greater than actual number
 data = pd.read_excel('raw_data.xlsx', usecols=range(1,num_columns)) #important: do not change name "data"
@@ -101,26 +105,55 @@ def percent_conc(nuc, row, value):
 	#Return the given value divided by total
 	return value / total
 
-def get_index_list(index_column):
+def get_treatment_list(treatment_column):
 	"""
-	Returns a list containing the indexes of the dataset. 
+	Returns a list containing the treatments of the dataset. 
 	Params:
-	index_column - The column number where the indexes are contained.
+	treatment_column - The column number where the treatments are contained.
 	 """
 	#initialize empty list
-	index_list = []
-	#set column_name equal to the index_column's name
-	column_name = data.columns[index_column]
-	#loop through each index
+	treatment_list = []
+	#set column_name equal to the treatment_column's name
+	column_name = data.columns[treatment_column]
+	#loop through each treatment
 	for title in data[column_name]:
-		#if the title of the index is less than or equal to 10 characters, go to the next iteration
-		#this is because index titles are longer than 10 characters so anything less can be discarded
+		#if the title of the treatment is less than or equal to 10 characters, go to the next iteration
+		#this is because treatment titles are longer than 10 characters so anything less can be discarded
 		if len(title) <= 10:
 			continue
-		#add the index title to the list
-		index_list.append(title)
-	#return the list with all of the index titles
-	return index_list
+		#add the treatment title to the list
+		treatment_list.append(title)
+	#return the list with all of the treatment titles
+	return treatment_list
+
+def get_unique_treatment_list(treatment_column):
+	"""
+	Returns a list containing one of each treatment of the dataset. 
+	Params:
+	treatment_column - The column number where the treatments are contained.
+
+	todo: extract unique data/title from treatments
+	 """
+	#initialize empty list
+	unique_treatment_list = []
+	#set column_name equal to the treatment_column's name
+	column_name = data.columns[treatment_column]
+	tracker = False
+	counter = 0
+	#loop through each treatment
+	for title in data[column_name]:
+		#if the title of the treatment is less than or equal to 10 characters, go to the next iteration
+		#this is because treatment titles are longer than 10 characters so anything less can be discarded
+		if len(title) <= 10:
+			continue
+		#assumes that once above condition is not met once, it will continue to not be met through the rest of loop
+		#this is because the above loop is to get past labels such as "sample" which only appear at the top
+		if not tracker and counter % num_trials == 0: 
+			#add the treatment title to the list
+			unique_treatment_list.append(title)
+		counter += 1
+	#return the list with all of the treatment titles
+	return unique_treatment_list
 
 def create_conc_list(column_name):
 	"""
@@ -144,28 +177,55 @@ def create_conc_list(column_name):
 
 def create_nuc_dict(nuc):
 	"""
-	Returns dictionary of lists. The lists are percent concentrations for each row of the specified nucleoside.
+	Returns dictionary of lists. The lists are percent concentrations for each column of the specified nucleoside.
 	Params:
 	nuc - small string to indicate which nucleoside is of interest. EX: "5mC", "dA"
+	type - signifies if this nucleoside is 
 
 	Note: safe_guess is an arbitrary guess for a row that is both likely a valid row 
 	and also representative of the column's validiity (NaN or not NaN) (!)
 	(Empty values on valid columns are promised to be input as '0')
 	 """
+
 	safe_guess = 4
 	#initialize empty dictionary
 	input_dict = {}
 	target = nuc
-	#Loop through columns
-	for column_name in data.columns:
-		#if the column belongs to the specified nucleoside
-		if (column_name[0:2] == nuc):
-			#if the data value at safe_guess is NaN, go to the next column
-			if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
-				continue
-			#if the data value at safe_guess is meaningful, create the concentration list for this column
-			#and add it to the dictionary
-			input_dict[column_name] = create_conc_list(column_name)
+	is_first = True
+	if count_nucleoside_labelings(nuc) <= 2: #if this nuc has 2 or less labeling patterns
+		for column_name in data.columns:
+			#if the column belongs to the specified nucleoside
+			if (column_name[0:2] == nuc):
+				#if the data value at safe_guess is NaN, go to the next column
+				if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
+					continue
+				if ignore_first_labeling and is_first:
+					is_first = False
+					continue
+				value_list = create_conc_list(column_name)
+				x = 0
+				y = num_trials
+				for treatment in get_unique_treatment_list(treatment_column):
+					input_dict[treatment] = value_list[x:y]
+					x += num_trials
+					y += num_trials	
+				
+
+				
+	else:
+		#Loop through columns
+		for column_name in data.columns:
+			#if the column belongs to the specified nucleoside
+			if (column_name[0:2] == nuc):
+				if ignore_first_labeling and is_first:
+						is_first = False
+						continue
+				#if the data value at safe_guess is NaN, go to the next column
+				if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
+					continue
+				#if the data value at safe_guess is meaningful, create the concentration list for this column
+				#and add it to the dictionary
+				input_dict[column_name] = create_conc_list(column_name)
 	#return the dictionary of conc lists
 	return input_dict
 
@@ -235,12 +295,12 @@ def create_df_list():
 	df_list = []
 	#for every nucleoside
 	for nuc in get_nuc_list():
-		#create a nucleside dictionary
-		inputs = create_nuc_dict(nuc)
 		if count_nucleoside_labelings(nuc) <= 2:
-			df_list.append(pd.DataFrame(inputs, index=[get_index_list(index_column)]).transpose())
+			inputs = create_nuc_dict(nuc)
+			df_list.append(pd.DataFrame(inputs, index=range(1,num_trials + 1)))
 		else:
-			df_list.append(pd.DataFrame(inputs, index=[get_index_list(index_column)]))
+			inputs = create_nuc_dict(nuc)
+			df_list.append(pd.DataFrame(inputs, index=[get_unique_treatment_list(treatment_column)]))
 	return df_list
 
 def get_column_names():
@@ -269,10 +329,12 @@ def excel_output():
 			#print(i) 
 			i.to_excel(writer, sheet_name=title_list[x])
 			x += 1
+	writer.save()
 	print(filename + " was created successfully!")
 
 ####APP
 
+print(get_unique_treatment_list(treatment_column))
 
 excel_output()
 
