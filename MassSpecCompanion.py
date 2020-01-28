@@ -309,7 +309,6 @@ def create_df_list():
 			df_list.append(pd.DataFrame(inputs, index=range(1,num_trials + 1)))
 		else:
 			inputs = create_nuc_dict(nuc)
-			print(inputs)
 			df_list.append(pd.DataFrame(inputs, index=[get_unique_treatment_list(treatment_column)]))
 	return df_list
 
@@ -320,7 +319,6 @@ def get_column_names():
 	name_list = []
 	for column_name in data.columns:
 		if column_name[0:2] in get_nuc_list():
-			print(column_name)	
 			name_list.append(column_name)
 	return name_list
 
@@ -332,14 +330,21 @@ def excel_output():
 	sheets in the excel file. 
 	"""
 	filename = 'Data_Output.xlsx'
-	title_list = get_nuc_list()
+	title_list = get_nuc_list() 
 	with pd.ExcelWriter(filename) as writer:
 		x = 0
-		for i in create_df_list():
+		df_list = create_df_list()
+		for df in df_list:
 			#print(i) 
-			i.to_excel(writer, sheet_name=title_list[x])
+			df.to_excel(writer, sheet_name=title_list[x], startrow=2)
+			workbook = writer.book
+			worksheet = writer.sheets[title_list[x]]
+			worksheet.set_column('A:Z', 40)
+			worksheet.set_zoom(80)
 			x += 1
-	writer.save()
+
+		writer.save()
+
 	print(filename + " was created successfully!")
 
 ####APP
