@@ -6,6 +6,8 @@ import pprint
 import openpyxl
 import xlsxwriter
 
+SAFE_GUESS = 4
+
 ignore_first_labeling = True
 
 treatment_column = 0 #columns are zero indexed
@@ -28,22 +30,22 @@ data = pd.read_excel('raw_data.xlsx', usecols=range(1,num_columns)) #important: 
 #in the title. the input data is promised to be standardized, so this is reasonable.
 
 
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+# def chunks(lst, n):
+#     """Yield successive n-sized chunks from lst."""
+#     for i in range(0, len(lst), n):
+#         yield lst[i:i + n]
 
-#custom mean function to ignore NaN values
-def mean(lst):
-	total = 0
-	num_entries = len(lst)
-	for i in lst:
-		if not math.isnan(float(i)):
-			total += i
-	return total / num_entries
+# #custom mean function to ignore NaN values
+# def mean(lst):
+# 	total = 0
+# 	num_entries = len(lst)
+# 	for i in lst:
+# 		if not math.isnan(float(i)):
+# 			total += i
+# 	return total / num_entries
 
 # def trial_averages():
-	#pprint.pprint(list(chunks(raw_percentages, 3)))
+# 	pprint.pprint(list(chunks(raw_percentages, 3)))
 # count = 0
 # column_number = 0
 # data_file = 0
@@ -181,12 +183,11 @@ def create_nuc_dict(nuc):
 	nuc - small string to indicate which nucleoside is of interest. EX: "5mC", "dA"
 	type - signifies if this nucleoside is 
 
-	Note: safe_guess is an arbitrary guess for a row that is both likely a valid row 
+	Note: SAFE_GUESS is an arbitrary guess for a row that is both likely a valid row 
 	and also representative of the column's validiity (NaN or not NaN) (!)
 	(Empty values on valid columns are promised to be input as '0')
 	 """
 
-	safe_guess = 4
 	#initialize empty dictionary
 	input_dict = {}
 	is_first = True
@@ -195,8 +196,8 @@ def create_nuc_dict(nuc):
 		for column_name in data.columns:
 			#if the column belongs to the specified nucleoside
 			if (column_name[0:2] == nuc):
-				#if the data value at safe_guess is NaN, go to the next column
-				if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
+				#if the data value at SAFE_GUESS is NaN, go to the next column
+				if isinstance(data[column_name][SAFE_GUESS], Number) and math.isnan(float(data[column_name][SAFE_GUESS])):
 					continue
 				if ignore_first_labeling and is_first:
 					is_first = False
@@ -219,8 +220,8 @@ def create_nuc_dict(nuc):
 				if ignore_first_labeling and is_first:
 					is_first = False
 					continue
-				#if the data value at safe_guess is NaN, go to the next column
-				if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
+				#if the data value at SAFE_GUESS is NaN, go to the next column
+				if isinstance(data[column_name][SAFE_GUESS], Number) and math.isnan(float(data[column_name][SAFE_GUESS])):
 					continue
 				conc_list = create_conc_list(column_name)
 				for i in range(1, num_trials + 1):
@@ -231,8 +232,6 @@ def create_nuc_dict(nuc):
 					for num in range(0, int(num_rows / num_trials)):
 						input_list.append(conc_list[number + tracker])
 						tracker += num_trials
-
-
 					input_dict[str(counter) + "-" + str(i)] = input_list
 					tracker += 1
 				counter += 1
@@ -263,18 +262,17 @@ def count_nucleoside_labelings(nuc):
 	Params:
 	nuc - small string to indicate which nucleoside is of interest. EX: "5mC", "dA"
 
-	Note: safe_guess is an arbitrary guess for a row that is both likely a valid row 
+	Note: SAFE_GUESS is an arbitrary guess for a row that is both likely a valid row 
 	and also representative of the column's validiity (NaN or not NaN) (!)
 	(Empty values on valid columns are promised to be input as '0')
 	 """
-	safe_guess = 4 
 	count = 0
 	#loop through the columns
 	for column_name in data.columns:
 		#if the column is of the given nucleoside
 		if (column_name[0:2] == nuc):
 			#if the column contains meaningful values
-			if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
+			if isinstance(data[column_name][SAFE_GUESS], Number) and math.isnan(float(data[column_name][SAFE_GUESS])):
 				continue
 			#increment count
 			count+= 1
@@ -317,10 +315,25 @@ def get_column_names():
 	Returns a list of the column names.
 	 """
 	name_list = []
+	nuc_list = get_nuc_list()
 	for column_name in data.columns:
-		if column_name[0:2] in get_nuc_list():
+		if column_name[0:2] in nuc_list:
 			name_list.append(column_name)
 	return name_list
+
+def get_labeling_list(nuc):
+	first = True
+	labeling_list = []
+	for column_name in data.columns:
+		if column_name[0:2] == nuc:
+			if ignore_first_labeling and first:
+				first = False
+				continue
+			if isinstance(data[column_name][SAFE_GUESS], Number) and math.isnan(float(data[column_name][SAFE_GUESS])):
+				continue
+			labeling_list.append(column_name)
+	return labeling_list
+
 
 def excel_output():
 	"""
@@ -336,11 +349,21 @@ def excel_output():
 		df_list = create_df_list()
 		for df in df_list:
 			#print(i) 
-			df.to_excel(writer, sheet_name=title_list[x], startrow=2)
+			df.to_excel(writer, sheet_name=title_list[x], startrow=1)
 			workbook = writer.book
 			worksheet = writer.sheets[title_list[x]]
-			worksheet.set_column('A:Z', 40)
 			worksheet.set_zoom(80)
+			if count_nucleoside_labelings(title_list[x]) > 2:
+
+				labelings = get_labeling_list(title_list[x])
+				tracker = 1
+				for i in range(0, len(labelings)):
+					#number represents the first index to start from, decremented for 0-indexing
+					worksheet.write(0, tracker, labelings[i])
+					tracker += num_trials
+			else:
+				worksheet.set_column('A:Z', 40)
+
 			x += 1
 
 		writer.save()
