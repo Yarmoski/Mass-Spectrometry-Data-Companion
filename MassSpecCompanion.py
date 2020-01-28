@@ -117,9 +117,8 @@ def get_treatment_list(treatment_column):
 	column_name = data.columns[treatment_column]
 	#loop through each treatment
 	for title in data[column_name]:
-		#if the title of the treatment is less than or equal to 10 characters, go to the next iteration
-		#this is because treatment titles are longer than 10 characters so anything less can be discarded
-		if len(title) <= 10:
+		#data is promised to be standardized, so skipping "sample" is acceptable
+		if title.lower() == "sample":
 			continue
 		#add the treatment title to the list
 		treatment_list.append(title)
@@ -190,8 +189,8 @@ def create_nuc_dict(nuc):
 	safe_guess = 4
 	#initialize empty dictionary
 	input_dict = {}
-	target = nuc
 	is_first = True
+	counter = 1
 	if count_nucleoside_labelings(nuc) <= 2: #if this nuc has 2 or less labeling patterns
 		for column_name in data.columns:
 			#if the column belongs to the specified nucleoside
@@ -209,24 +208,35 @@ def create_nuc_dict(nuc):
 					input_dict[treatment] = value_list[x:y]
 					x += num_trials
 					y += num_trials	
-				
-
+		
 				
 	else:
+		conc_lists = []
 		#Loop through columns
 		for column_name in data.columns:
 			#if the column belongs to the specified nucleoside
 			if (column_name[0:2] == nuc):
 				if ignore_first_labeling and is_first:
-						is_first = False
-						continue
+					is_first = False
+					continue
 				#if the data value at safe_guess is NaN, go to the next column
 				if isinstance(data[column_name][safe_guess], Number) and math.isnan(float(data[column_name][safe_guess])):
 					continue
-				#if the data value at safe_guess is meaningful, create the concentration list for this column
-				#and add it to the dictionary
-				input_dict[column_name] = create_conc_list(column_name)
-	#return the dictionary of conc lists
+				conc_list = create_conc_list(column_name)
+				for i in range(1, num_trials + 1):
+					#number represents the first index to start from, decremented for 0-indexing
+					number = i - 1
+					input_list = []
+					tracker = 0
+					for num in range(0, int(num_rows / num_trials)):
+						input_list.append(conc_list[number + tracker])
+						tracker += num_trials
+
+
+					input_dict[str(counter) + "-" + str(i)] = input_list
+					tracker += 1
+				counter += 1
+
 	return input_dict
 
 
@@ -259,7 +269,6 @@ def count_nucleoside_labelings(nuc):
 	 """
 	safe_guess = 4 
 	count = 0
-	target = nuc
 	#loop through the columns
 	for column_name in data.columns:
 		#if the column is of the given nucleoside
@@ -300,6 +309,7 @@ def create_df_list():
 			df_list.append(pd.DataFrame(inputs, index=range(1,num_trials + 1)))
 		else:
 			inputs = create_nuc_dict(nuc)
+			print(inputs)
 			df_list.append(pd.DataFrame(inputs, index=[get_unique_treatment_list(treatment_column)]))
 	return df_list
 
@@ -334,7 +344,6 @@ def excel_output():
 
 ####APP
 
-print(get_unique_treatment_list(treatment_column))
 
 excel_output()
 
