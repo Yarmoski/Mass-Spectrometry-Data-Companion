@@ -304,7 +304,10 @@ def create_df_list():
 	for nuc in get_nuc_list():
 		if count_nucleoside_labelings(nuc) <= 2:
 			inputs = create_nuc_dict(nuc)
-			df_list.append(pd.DataFrame(inputs, index=range(1,num_trials + 1)))
+			index_numbers = range(1,num_trials + 1)
+			#Trial n
+			index_list = ["Trial " + str(index_numbers[i]) for i in range(len(index_numbers))]
+			df_list.append(pd.DataFrame(inputs, index=index_list))
 		else:
 			inputs = create_nuc_dict(nuc)
 			df_list.append(pd.DataFrame(inputs, index=[get_unique_treatment_list(treatment_column)]))
@@ -340,7 +343,8 @@ def excel_output():
 	Creates the final excel file. 
 	The data is processed, put into individual pandas dataframes, and manipulated according to
 	specific specifications. The dataframes are put into lists, formatted, then added as individual
-	sheets in the excel file. 
+	sheets in the excel file. Additional processing is performed by XlsxWriter to format the individual sheets,
+	adjusting column sizes, adjusting df positions, changing zoom, etc.
 	"""
 	filename = 'Data_Output.xlsx'
 	title_list = get_nuc_list() 
@@ -348,21 +352,26 @@ def excel_output():
 		x = 0
 		df_list = create_df_list()
 		for df in df_list:
-			#print(i) 
-			df.to_excel(writer, sheet_name=title_list[x], startrow=1)
+			label_count = count_nucleoside_labelings(title_list[x])
+			if label_count > 2:
+				df.to_excel(writer, sheet_name=title_list[x], startrow=1)
+			else:
+				df.to_excel(writer, sheet_name=title_list[x])
 			workbook = writer.book
 			worksheet = writer.sheets[title_list[x]]
-			worksheet.set_zoom(80)
-			if count_nucleoside_labelings(title_list[x]) > 2:
-
+			if label_count > 2:
+				cell_format = workbook.add_format({'bold': True, 'align': 'center'})
 				labelings = get_labeling_list(title_list[x])
 				tracker = 1
 				for i in range(0, len(labelings)):
 					#number represents the first index to start from, decremented for 0-indexing
-					worksheet.write(0, tracker, labelings[i])
+					worksheet.merge_range(0, tracker, 0, tracker + num_trials - 1, labelings[i], cell_format)
 					tracker += num_trials
+				worksheet.set_column('A:A', 40)
+				worksheet.set_zoom(80)
 			else:
-				worksheet.set_column('A:Z', 40)
+				worksheet.set_column('B:Z', 40)
+				worksheet.set_zoom(70)
 
 			x += 1
 
