@@ -11,14 +11,10 @@ SAFE_GUESS = 4
 ignore_first_labeling = True
 
 treatment_column = 0 #columns are zero indexed
-# num_trials=int(input("Please enter the number of trials.")) #3
-# num_rows = int(input("Please enter the total number of rows.")) #36
-num_trials = 3
-num_rows = 36
-
-num_columns = 100 #can be greater than actual number
+num_trials=int(input("Please enter the number of trials.")) #3
+num_columns = 200 #can be greater than actual number
 data = pd.read_excel('raw_data.xlsx', usecols=range(1,num_columns)) #important: do not change name "data"
-
+num_rows = data.shape[0]
 
 
 
@@ -30,46 +26,7 @@ data = pd.read_excel('raw_data.xlsx', usecols=range(1,num_columns)) #important: 
 #in the title. the input data is promised to be standardized, so this is reasonable.
 
 
-# def chunks(lst, n):
-#     """Yield successive n-sized chunks from lst."""
-#     for i in range(0, len(lst), n):
-#         yield lst[i:i + n]
 
-# #custom mean function to ignore NaN values
-# def mean(lst):
-# 	total = 0
-# 	num_entries = len(lst)
-# 	for i in lst:
-# 		if not math.isnan(float(i)):
-# 			total += i
-# 	return total / num_entries
-
-# def trial_averages():
-# 	pprint.pprint(list(chunks(raw_percentages, 3)))
-# count = 0
-# column_number = 0
-# data_file = 0
-# for i in list(chunks(raw_percentages, num_trials)):
-# 	try:
-# 		label = data.columns[column_number]
-# 	except IndexError:
-# 		pass
-
-# 	#Change the column name to the next column once all averages for that column have been outputted
-# 	data_file += 1
-	
-# 	if count == 0:
-# 		data_file = 1
-# 	count += num_trials
-# 	if num_rows - count == 0:
-# 		column_number += 1
-# 		count = 0
-
-# 	try:
-# 		print("The average percent concentration for {} file {} is {}".format(label, data_file, mean(i)))
-# 	except:
-# 		print("Non-numeric values or missing data")
-# 		continue
 
 def percent_conc(nuc, row, value):
 	"""
@@ -337,6 +294,47 @@ def get_labeling_list(nuc):
 			labeling_list.append(column_name)
 	return labeling_list
 
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+#custom mean function to ignore NaN values
+def mean(lst):
+	total = 0
+	num_entries = len(lst)
+	for i in lst:
+		if not math.isnan(float(i)):
+			total += i
+	return total / num_entries
+
+def trial_averages(raw_percentages):
+	pprint.pprint(list(chunks(raw_percentages, 3)))
+	count = 0
+	column_number = 0
+	data_file = 0
+	for i in list(chunks(raw_percentages, num_trials)):
+		try:
+			label = data.columns[column_number]
+		except IndexError:
+			pass
+
+		#Change the column name to the next column once all averages for that column have been outputted
+		data_file += 1
+		
+		if count == 0:
+			data_file = 1
+		count += num_trials
+		if num_rows - count == 0:
+			column_number += 1
+			count = 0
+
+		try:
+			print("The average percent concentration for {} file {} is {}".format(label, data_file, mean(i)))
+		except:
+			print("Non-numeric values or missing data")
+			continue
 
 def excel_output():
 	"""
