@@ -7,8 +7,10 @@ import openpyxl
 import xlsxwriter
 
 SAFE_GUESS = 4
-
 ignore_first_labeling = True
+result_name = "Data_Output-RENAME_IMMEDIATELY.xlsx"
+
+print("Any file with the name {} in this directory will be overriden.".format(result_name))
 
 treatment_column = 0 #columns are zero indexed
 num_trials=int(input("Please enter the number of trials.")) #3
@@ -344,7 +346,7 @@ def excel_output():
 	sheets in the excel file. Additional processing is performed by XlsxWriter to format the individual sheets,
 	adjusting column sizes, adjusting df positions, changing zoom, etc.
 	"""
-	filename = 'Data_Output.xlsx'
+	filename = result_name
 	title_list = get_nuc_list() 
 	with pd.ExcelWriter(filename) as writer:
 		x = 0
