@@ -15,12 +15,17 @@ print("Any file with the name {} in this directory will be overriden.".format(re
 treatment_column = 0 #columns are zero indexed
 num_trials=int(input("Please enter the number of trials.")) #3
 num_columns = 200 #can be greater than actual number
-data = pd.read_excel('raw_data.xlsx', usecols=range(1,num_columns)) #important: do not change name "data"
+data = pd.read_excel('RNA-DNA set .xlsx', usecols=range(1,num_columns)) #important: do not change name "data"
 num_rows = data.shape[0]
 
 
 
+"""
+Standardization notes:
 
+-Columns with no values should have NO VALUES (not zeroes)
+-Particular data spots without values that are in columns that should have values should be replaced with '0'
+"""
 
 #Note: these functions rely on the the dataframe being called "data"
 
@@ -367,7 +372,7 @@ def excel_output():
 					#number represents the first index to start from, decremented for 0-indexing
 					worksheet.merge_range(0, tracker, 0, tracker + num_trials - 1, labelings[i], cell_format)
 					tracker += num_trials
-				worksheet.set_column('A:A', 40)
+				worksheet.set_column('A:A', 50)
 				worksheet.set_zoom(80)
 			else:
 				worksheet.set_column('B:Z', 40)
@@ -391,4 +396,3 @@ excel_output()
 
 
 	
-
