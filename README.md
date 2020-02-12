@@ -6,4 +6,4 @@ A data-processing tool created for use with Mass Spectrometry output.
 
 ## Data Standardization Requirements
 
-## Expected Inputs/Outputs examples
+## Expected Inputs/Outputs examples 
