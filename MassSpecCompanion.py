@@ -10,10 +10,10 @@ SAFE_GUESS = 4
 ignore_first_labeling = True
 result_name = "Data_Output-RENAME_IMMEDIATELY.xlsx"
 
-print("Any file with the name {} in this directory will be overriden.".format(result_name))
+print("Any file with the name {} in this directory will be overriden. \n".format(result_name))
 
 treatment_column = 0 #columns are zero indexed
-num_trials=int(input("Please enter the number of trials.")) #3
+num_trials=int(input("Please enter the number of repeated/identical trials. This is typically a number from 3-6. \n"))
 num_columns = 200 #can be greater than actual number
 data = pd.read_excel('RNA-DNA set .xlsx', usecols=range(1,num_columns)) #important: do not change name "data"
 num_rows = data.shape[0]
