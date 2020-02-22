@@ -2,6 +2,9 @@
 
 A data-processing tool created for use with Mass Spectrometry output. Designed to work well with excel sheets of MS data formatted to meet Radu Lab standardization specifications. 
 
+## Usage
+To be updated
+
 ## Data Standardization Requirements
 - Nucleoside categories as columns
 - Specific sample compositions and trial numbers as rows
@@ -39,9 +42,12 @@ This column is meant to be ignored.
 
 
 ## Lab Info
-![UCLA Radu Lab](http://pet.ucla.edu/lab/radu-lab/) 
+[UCLA Radu Lab](http://pet.ucla.edu/lab/radu-lab/) 
 
 Molecular & Medical Pharmacology Department, Pancreatic Cancer Research
+
+## Thank you
+Thank you to Research Team Lead Thuc Le for letting me help with your research!
 
 
 
