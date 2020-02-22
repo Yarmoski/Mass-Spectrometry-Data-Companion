@@ -15,24 +15,34 @@ A data-processing tool created for use with Mass Spectrometry output. Designed t
 
 ### Valid example input
 Meets Data standardization requirements.
+
+
 ![Expected Input Example](https://user-images.githubusercontent.com/49767209/75083227-7d45a800-54cc-11ea-8243-b0ef8bedd239.png)
 
 ### Valid 0 values
-These 0 values hsould be used in calculation.
+These 0 values should be used in calculation.
+
+
 ![Correct 0 values](https://user-images.githubusercontent.com/49767209/75083277-d1e92300-54cc-11ea-8e18-d7850ec458fb.png)
 
 ### Invalid NaN values
 Never mix valid and NaN values.
+
+
 ![Incorrect NaN values](https://user-images.githubusercontent.com/49767209/75083293-e0373f00-54cc-11ea-8a97-26fc4262670d.png)
 
 ### Valid NaN usage
 This column is meant to be ignored.
+
+
 ![Correct NaN values](https://user-images.githubusercontent.com/49767209/75083309-f218e200-54cc-11ea-8f33-94d8783354cc.png)
 
 
 ## Lab Info
-UCLA Radu Lab 
+![UCLA Radu Lab](http://pet.ucla.edu/lab/radu-lab/) 
+
 Molecular & Medical Pharmacology Department, Pancreatic Cancer Research
-http://pet.ucla.edu/lab/radu-lab/
+
+
 
 
