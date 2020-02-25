@@ -6,14 +6,17 @@ import pprint
 import openpyxl
 import xlsxwriter
 
+#Constants
 SAFE_GUESS = 4
+
+#Initializations and Settings
 ignore_first_labeling = True
 result_name = "Data_Output-RENAME_IMMEDIATELY.xlsx"
 
 print("Any file with the name {} in this directory will be overriden. \n".format(result_name))
 
 treatment_column = 0 #columns are zero indexed
-num_trials=int(input("Please enter the number of repeated/identical trials. This is typically a number from 3-6. \n"))
+num_trials=int(input("Please enter the number of repeated/identical trials. This is typically a number from 3-6. \nz"))
 num_columns = 200 #can be greater than actual number
 data = pd.read_excel('RNA-DNA set .xlsx', usecols=range(1,num_columns)) #important: do not change name "data"
 num_rows = data.shape[0]
@@ -202,24 +205,6 @@ def create_nuc_dict(nuc):
 
 	return input_dict
 
-
-
-def count_nucleosides():
-	"""
-	Return the number of unique nucleosides in the dataset.
-	 """
-	tracker = ""
-	count = 0
-	for column_name in data.columns:
-		#if this nucleoside has not been seen before 
-		if (column_name[0:2] != tracker):
-			#change tracker to the nucleoside name
-			tracker = column_name[0:2]
-			#add to the unique nucleoside count
-			count += 1
-	#return unique nucleoside count
-	return count
-
 def count_nucleoside_labelings(nuc):
 	"""
 	Returns the number of labelings for the given nucleoside.
@@ -241,6 +226,22 @@ def count_nucleoside_labelings(nuc):
 			#increment count
 			count+= 1
 	#return the number of labelings
+	return count
+
+def count_nucleosides():
+	"""
+	Return the number of unique nucleosides in the dataset.
+	 """
+	tracker = ""
+	count = 0
+	for column_name in data.columns:
+		#if this nucleoside has not been seen before 
+		if (column_name[0:2] != tracker):
+			#change tracker to the nucleoside name
+			tracker = column_name[0:2]
+			#add to the unique nucleoside count
+			count += 1
+	#return unique nucleoside count
 	return count
 
 def get_nuc_list():
