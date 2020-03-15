@@ -3,7 +3,11 @@
 A data-processing tool created for use with Mass Spectrometry output. Designed to work well with excel sheets of MS data formatted to meet Radu Lab standardization specifications. 
 
 # Usage
-To be updated
+There is currently no GUI. However, the data can be processed manually. Make sure the data file is in the same directory as the data companion.
+Then run:
+```
+python MassSpecCompanion.py
+```
 
 # Data Standardization Requirements
 - Nucleoside categories as columns
