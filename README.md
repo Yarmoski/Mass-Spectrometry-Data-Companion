@@ -41,6 +41,10 @@ This column is meant to be ignored.
 ![Correct NaN values](https://user-images.githubusercontent.com/49767209/75083309-f218e200-54cc-11ea-8f33-94d8783354cc.png)
 
 
+# Roadmap
+- User interface
+- Reduce time complexity
+
 # Lab Info
 [UCLA Radu Lab](http://pet.ucla.edu/lab/radu-lab/) 
 
