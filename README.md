@@ -1,6 +1,6 @@
 # Mass-Spectrometry-Data-Companion
 
-A data-processing tool created for use with Mass Spectrometry output. Designed to work well with excel sheets of MS data formatted to meet Radu Lab standardization specifications. 
+A data-processing tool created for use with Mass Spectrometry output. Designed to work well with excel sheets of MS data formatted to meet Radu Lab standardization specifications. Built for the undergraduate cancer research team at the UCLA Radu Lab.
 
 # Usage
 There is currently no GUI. However, the data can be processed manually. Make sure the data file is in the same directory as the data companion.
